@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Taym - Art ✈️</title>
+    <link rel="icon" type="image/png" href="taym_icon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+        
+        /* ألوان الثيم الجديد: أزرق سماوي، كحلي، أبيض */
+        :root { 
+            --primary: #0288D1; /* أزرق قوي */
+            --accent: #FF9800; /* برتقالي للتباين */
+            --bg-soft: #E3F2FD; /* سماوي فاتح جداً */
+            --bg-body: #BBDEFB; /* لون السماء */
+        }
+        
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Tajawal', sans-serif; background: linear-gradient(180deg, #90CAF9 0%, #E3F2FD 100%); margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* الرأس */
+        header { background: white; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); height: 55px; flex-shrink: 0; z-index: 10; }
+        .branding { display: flex; align-items: center; gap: 8px; }
+        .icon { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent); padding: 1px; object-fit: cover; background: white; }
+        h1 { margin: 0; font-size: 1.1rem; color: var(--primary); font-weight: bold; text-transform: uppercase; }
+        .btn-head { background: #ECEFF1; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; margin-left: 5px; color: #37474F; cursor: pointer; font-weight: bold; }
+
+        /* منطقة الرسم */
+        #canvas-box { flex-grow: 1; position: relative; background: white; margin: 8px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; border: 4px solid white; }
+        canvas { display: block; touch-action: none; }
+
+        /* شريط الأدوات */
+        .toolbar {
+            background: white;
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: flex-start;
+            gap: 5px;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            max-height: 45vh;
+            overflow-y: auto;
+        }
+
+        .group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-soft);
+            padding: 4px;
+            border-radius: 10px;
+            gap: 4px;
+            margin-bottom: 4px;
+            border: 1px solid #BBDEFB;
+        }
+
+        .tool-btn {
+            width: 34px; height: 34px;
+            border: none; background: white; border-radius: 8px;
+            font-size: 1.2rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.1s;
+        }
+        .tool-btn:active { transform: scale(0.9); }
+        .tool-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 5px rgba(2, 136, 209, 0.4); }
+
+        /* ألوان شاملة */
+        .colors-grid { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; max-width: 100%; }
+        .c-pick { width: 26px; height: 26px; border-radius: 50%; border: 2px solid white; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .c-pick.active { transform: scale(1.2); border: 2px solid var(--accent); z-index: 2; }
+        input[type="color"] { width: 28px; height: 28px; border: none; padding: 0; background: none; }
+
+        .slider-box { width: 100%; display: flex; justify-content: center; align-items: center; padding: 5px; font-size: 0.9rem; color: var(--primary); font-weight: bold; }
+        input[type=range] { width: 70%; margin: 0 10px; accent-color: var(--primary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="branding">
+            <img src="taym_icon.png" class="icon" onerror="this.style.display='none'">
+            <h1>Taym - Art ✈️</h1>
+        </div>
+        <div>
+            <button onclick="clearCanvas()" class="btn-head" style="color:#d32f2f;">مسح 🗑️</button>
+            <button onclick="saveCanvas()" class="btn-head" style="color:#0277BD;">حفظ 💾</button>
+        </div>
+    </header>
+
+    <div id="canvas-box"><canvas id="c"></canvas></div>
+
+    <div class="toolbar">
+        <div class="group" style="width: 100%;">
+            <div class="colors-grid">
+                <div class="c-pick active" style="background: #000000;" onclick="sc('#000000',this)"></div>
+                <div class="c-pick" style="background: #ffffff;" onclick="sc('#ffffff',this)"></div>
+                <div class="c-pick" style="background: #0D47A1;" onclick="sc('#0D47A1',this)"></div>
+                <div class="c-pick" style="background: #1976D2;" onclick="sc('#1976D2',this)"></div>
+                <div class="c-pick" style="background: #2196F3;" onclick="sc('#2196F3',this)"></div>
+                <div class="c-pick" style="background: #03A9F4;" onclick="sc('#03A9F4',this)"></div>
+                <div class="c-pick" style="background: #00BCD4;" onclick="sc('#00BCD4',this)"></div>
+                <div class="c-pick" style="background: #009688;" onclick="sc('#009688',this)"></div>
+                <div class="c-pick" style="background: #4CAF50;" onclick="sc('#4CAF50',this)"></div>
+                <div class="c-pick" style="background: #8BC34A;" onclick="sc('#8BC34A',this)"></div>
+                <div class="c-pick" style="background: #FFEB3B;" onclick="sc('#FFEB3B',this)"></div>
+                <div class="c-pick" style="background: #FFC107;" onclick="sc('#FFC107',this)"></div>
+                <div class="c-pick" style="background: #FF9800;" onclick="sc('#FF9800',this)"></div>
+                <div class="c-pick" style="background: #FF5722;" onclick="sc('#FF5722',this)"></div>
+                <div class="c-pick" style="background: #f44336;" onclick="sc('#f44336',this)"></div>
+                <div class="c-pick" style="background: #795548;" onclick="sc('#795548',this)"></div>
+                <div class="c-pick" style="background: #9E9E9E;" onclick="sc('#9E9E9E',this)"></div>
+                <input type="color" onchange="sc(this.value,null)">
+            </div>
+        </div>
+
+        <div class="group">
+            <button class="tool-btn active" onclick="st('brush')">🖌️</button>
+            <button class="tool-btn" onclick="st('fill')">🪣</button>
+            <button class="tool-btn" onclick="st('text')">🅰️</button>
+            <button class="tool-btn" onclick="st('eraser')">🧼</button>
+        </div>
+
+        <div class="group">
+            <button class="tool-btn" onclick="st('rect')">⬜</button>
+            <button class="tool-btn" onclick="st('circle')">⭕</button>
+            <button class="tool-btn" onclick="st('triangle')">🔺</button>
+            <button class="tool-btn" onclick="st('line')">📏</button>
+            <button class="tool-btn" onclick="st('arrow')">↗️</button>
+        </div>
+
+        <div class="group">
+            <button class="tool-btn" onclick="ss('✈️')">✈️</button>
+            <button class="tool-btn" onclick="ss('🚀')">🚀</button>
+            <button class="tool-btn" onclick="ss('🚁')">🚁</button>
+            <button class="tool-btn" onclick="ss('☁️')">☁️</button>
+            <button class="tool-btn" onclick="ss('🪐')">🪐</button>
+            <button class="tool-btn" onclick="ss('⭐')">⭐</button>
+        </div>
+
+        <div class="slider-box group">
+            <span>سمك الخط:</span>
+            <input type="range" min="1" max="40" value="5" onchange="sl(this.value)">
+        </div>
+    </div>
+
+    <script>
+        const cv=document.getElementById('c'), ctx=cv.getContext('2d'), box=document.getElementById('canvas-box');
+        let isD=false, tool='brush', col='#000000', lw=5, sx, sy, snap, stamp='✈️';
+        
+        function rsz(){
+            let t=document.createElement('canvas'); t.width=cv.width; t.height=cv.height;
+            if(cv.width>0) t.getContext('2d').drawImage(cv,0,0);
+            cv.width=box.offsetWidth; cv.height=box.offsetHeight;
+            ctx.fillStyle="white"; ctx.fillRect(0,0,cv.width,cv.height);
+            if(t.width>0) ctx.drawImage(t,0,0);
+            ctx.lineCap='round'; ctx.lineJoin='round';
+        }
+        window.onload=rsz; window.onresize=rsz; setTimeout(rsz,500);
+
+        const pos=(e)=>{
+            const r=cv.getBoundingClientRect(); 
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            return {x:x-r.left, y:y-r.top};
+        };
+
+        const start=(e)=>{
+            if(e.target!=cv)return; isD=true; const p=pos(e); sx=p.x; sy=p.y;
+            ctx.beginPath(); ctx.lineWidth=lw; ctx.strokeStyle=col; ctx.fillStyle=col;
+            snap=ctx.getImageData(0,0,cv.width,cv.height);
+            if(tool=='brush'){ ctx.moveTo(sx,sy); ctx.lineTo(sx,sy); ctx.stroke(); }
+            else if(tool=='fill'){ fill(sx,sy,col); isD=false; }
+            else if(tool=='text'){ txt(sx,sy); isD=false; }
+            else if(tool=='stamp'){ drSt(sx,sy); isD=false; }
+        };
+
+        const move=(e)=>{
+            if(!isD)return; const p=pos(e);
+            if(tool=='brush'){ ctx.lineTo(p.x,p.y); ctx.stroke(); }
+            else if(tool=='eraser'){ ctx.strokeStyle='white'; ctx.lineWidth=lw*1.5; ctx.lineTo(p.x,p.y); ctx.stroke(); ctx.strokeStyle=col; ctx.lineWidth=lw; }
+            else if(['rect','circle','triangle','line','arrow'].includes(tool)){ ctx.putImageData(snap,0,0); shape(p.x,p.y); }
+        };
+
+        const end=()=>{ isD=false; ctx.beginPath(); };
+
+        function shape(x,y){
+            ctx.beginPath();
+            if(tool=='rect') ctx.rect(sx,sy,x-sx,y-sy);
+            else if(tool=='circle'){ let r=Math.hypot(x-sx,y-sy); ctx.arc(sx,sy,r,0,6.28); }
+            else if(tool=='triangle'){ ctx.moveTo(sx,sy); ctx.lineTo(x,y); ctx.lineTo(sx-(x-sx),y); ctx.closePath(); }
+            else if(tool=='line'){ ctx.moveTo(sx,sy); ctx.lineTo(x,y); }
+            else if(tool=='arrow'){ 
+                const h=Math.max(15,lw*2), a=Math.atan2(y-sy,x-sx);
+                ctx.moveTo(sx,sy); ctx.lineTo(x,y);
+                ctx.lineTo(x-h*Math.cos(a-0.5),y-h*Math.sin(a-0.5));
+                ctx.moveTo(x,y); ctx.lineTo(x-h*Math.cos(a+0.5),y-h*Math.sin(a+0.5));
+            }
+            ctx.stroke();
+        }
+
+        function txt(x,y){ setTimeout(()=>{ let t=prompt("أدخل النص:"); if(t){ ctx.font="bold "+(lw*2+14)+"px Tajawal"; ctx.textAlign='center'; ctx.fillText(t,x,y); } },50); }
+        function drSt(x,y){ ctx.font=(Math.max(30,lw*4))+"px Arial"; ctx.textAlign='center'; ctx.fillText(stamp,x,y); }
+
+        function fill(sx,sy,nc){
+            let d=document.createElement('div'); d.style.color=nc; document.body.appendChild(d);
+            let rgb=window.getComputedStyle(d).color.match(/\d+/g).map(Number); document.body.removeChild(d);
+            let img=ctx.getImageData(0,0,cv.width,cv.height), dat=img.data, w=cv.width, h=cv.height;
+            let si=(Math.floor(sy)*w+Math.floor(sx))*4, sr=dat[si], sg=dat[si+1], sb=dat[si+2];
+            if(sr==rgb[0]&&sg==rgb[1]&&sb==rgb[2])return;
+            let stk=[[Math.floor(sx),Math.floor(sy)]];
+            while(stk.length){
+                let [x,y]=stk.pop(), p=(y*w+x)*4;
+                while(y>=0&&dat[p]==sr&&dat[p+1]==sg&&dat[p+2]==sb){ y--; p-=w*4; } p+=w*4; y++;
+                let l=0, r=0;
+                while(y<h&&dat[p]==sr&&dat[p+1]==sg&&dat[p+2]==sb){
+                    dat[p]=rgb[0]; dat[p+1]=rgb[1]; dat[p+2]=rgb[2]; dat[p+3]=255;
+                    if(x>0){ if(dat[p-4]==sr&&dat[p-3]==sg&&dat[p-2]==sb){ if(!l){stk.push([x-1,y]);l=1;} } else l=0; }
+                    if(x<w-1){ if(dat[p+4]==sr&&dat[p+5]==sg&&dat[p+6]==sb){ if(!r){stk.push([x+1,y]);r=1;} } else r=0; }
+                    y++; p+=w*4;
+                }
+            }
+            ctx.putImageData(img,0,0);
+        }
+
+        window.st = (t) => { tool=t; updBtn(t); };
+        window.ss = (s) => { tool='stamp'; stamp=s; updBtn(null,s); };
+        window.sc = (c,el) => { col=c; if(el){ document.querySelectorAll('.c-pick').forEach(e=>e.classList.remove('active')); el.classList.add('active'); } };
+        window.sl = (v) => { lw=parseInt(v); };
+        window.clearCanvas = () => { if(confirm('هل تريد مسح الرسمة يا كابتن؟')){ ctx.fillStyle='white'; ctx.fillRect(0,0,cv.width,cv.height); } };
+        window.saveCanvas = () => { let l=document.createElement('a'); l.download='Taym-Art.png'; l.href=cv.toDataURL(); l.click(); };
+
+        function updBtn(t,s){
+            document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
+            if(t) document.querySelector(`button[onclick="st('${t}')"]`)?.classList.add('active');
+            else if(s) document.querySelectorAll(`button[onclick*="'${s}'"]`).forEach(b=>b.classList.add('active'));
+        }
+
+        cv.addEventListener('mousedown',start); cv.addEventListener('mousemove',move); cv.addEventListener('mouseup',end);
+        cv.addEventListener('touchstart',(e)=>{e.preventDefault();start(e)},{passive:false});
+        cv.addEventListener('touchmove',(e)=>{e.preventDefault();move(e)},{passive:false});
+        cv.addEventListener('touchend',(e)=>{e.preventDefault();end()},{passive:false});
+    </script>
+</body>
+</html>
